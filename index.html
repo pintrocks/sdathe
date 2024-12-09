@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>template maker</title>
+    <style>
+        /* Reset and global styles */
+        body, html {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #121212;
+            color: white;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Loading screen styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #121212;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            opacity: 1;
+            transition: opacity 1s ease; /* Smooth fade-out */
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            pointer-events: none; /* Prevent interaction while fading */
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #444;
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Main container */
+        .container {
+            position: relative;
+            width: 600px; /* Base width for 1:1 */
+            aspect-ratio: 1 / 1; /* Maintain square ratio */
+            background-color: #000;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* White bar at the top */
+        .top-bar {
+            background-color: white;
+            width: 100%;
+            font-family: Arial, sans-serif;
+            font-size: 1.5em;
+            font-weight: bold;
+            color: black;
+            padding: 10px;
+            box-sizing: border-box;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 115px; /* Default height */
+            min-height: 115px; /* Ensure it starts at 115px */
+            white-space: normal; /* Allow text to wrap */
+            word-wrap: break-word; /* Break long words if necessary */
+        }
+
+        /* Image display */
+        .image-container {
+            flex: 1; /* Fills remaining space */
+            background-color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            cursor: pointer; /* Pointer cursor on hover */
+        }
+
+        .image-container .placeholder-text {
+            position: absolute;
+            color: white;
+            font-size: 1.5em;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        /* Export button */
+        .export-btn {
+            margin-top: 50px;
+            padding: 10px 30px;
+            font-size: 1.2em;
+            font-family: Arial, sans-serif;
+            color: black;
+            background-color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .export-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.6);
+        }
+
+        /* File input (hidden) */
+        #file-input {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="loading-screen" id="loading-screen">
+    <div class="loading-spinner"></div>
+</div>
+
+
+<div class="container" id="capture">
+    <div class="top-bar" contenteditable="true" id="top-text">add text</div>
+    <div class="image-container">
+        <img id="main-image" src="" alt=" " ondblclick="uploadImage()">
+        <div class="placeholder-text" id="placeholder-text">Double click</div>
+    </div>
+</div>
+
+<button class="export-btn" onclick="exportToPNG()">EXPORT</button>
+
+<input type="file" id="file-input" accept="image/*" onchange="handleImageUpload(event)">
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas"></script>
+<script>
+    
+    function uploadImage() {
+        document.getElementById('file-input').click();
+    }
+
+    function handleImageUpload(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const image = document.getElementById('main-image');
+                const placeholder = document.getElementById('placeholder-text');
+                image.src = e.target.result;
+                placeholder.style.display = 'none'; 
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+   
+    function exportToPNG() {
+        const captureElement = document.getElementById('capture');
+        html2canvas(captureElement).then(canvas => {
+            const link = document.createElement('a');
+            link.download = 'export.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    }
+
+    
+    window.onload = function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        setTimeout(() => {
+            loadingScreen.classList.add('hidden'); 
+        }, 1000); 
+    };
+
+   
+    const topBar = document.getElementById('top-text');
+    topBar.addEventListener('input', () => {
+        topBar.style.height = 'auto'; 
+        topBar.style.height = topBar.scrollHeight + 'px'; 
+    });
+</script>
+
+</body>
+</html>
